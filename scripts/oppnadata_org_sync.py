@@ -124,58 +124,22 @@ class OppnaDataOrgSync(object):
         
         return True, org_obj
     
+
+    def get(self, url, retry=None):
+        if retry is None:
+            retry = 6
     
-    def create_organization(self, data):
-        params_org = {
-            'title': data.get('title'),
-            'name': data.get('name'),
-            'extras': [{'key': 'url', 'value': data.get('url')},
-                       {'key': 'last_sync', 'value': NOW_STR()},
-                       {'key': 'last_sync_hash', 
-                        'value': generate_hash(json.dumps(data))}],
-        }
-        org = self.ckan.action.organization_create(**params_org)
-        org_created = True
-        
-        self.log.info('Organization "{0}" created'.format(data.get('name')))
-            
-        # Create/update harvest source
         try:
-            source = self.ckan.action.harvest_source_show(id=org['name'])
-            self.log.info('Harvest Source "{0}" already exists, perform update...' \
-                     .format(data.get('title')))
-            
-            # Update harvest source url
-            harvest_source_params = {'id': data.get('name'),
-                                     'owner_org': org['id'],
-                                     'url': data.get('dcat_url')}
-            
-            self.ckan.action.harvest_source_patch(**harvest_source_params)
-            self.log.info('Successfully updated harvest source: {0}' \
-                          .format(data.get('name')))
-            
-        except ckanapi.NotFound:
-            params_source = {
-                'title': org['title'],
-                'name': org['name'],
-                'url': data.get('url'),
-                'owner_org': org['id'],
-                'frequency': 'WEEKLY',
-                'source_type': 'dcat_rdf',
-            }
-            
-            source = self.ckan.action.harvest_source_create(**params_source)
-            source_created = True
-            
-            self.log.info('Created harvest source "{0}"'.format(data['title']))
+            r = requests.get(url)
+        except:
+            if retry > 0:
+                retry = retry - 1
+                return self.get(url, retry)
     
-            # Create a new harvest job
-            params = {
-                'source_id': source['id'],
-            }
-            source = self.ckan.action.harvest_job_create(**params)
-            self.log.info('Harvest job "{0}" created'.format(data['title']))
+            return None
+        return r
     
+    def _process_users(self, org, data):
         # Handle users
         if data.get('email'):
             # Check if user is already an admin or has been invited
@@ -200,15 +164,82 @@ class OppnaDataOrgSync(object):
                 email_sent = True
                 self.log.info('Admin user for "{0}" created, and invite email sent' \
                          .format(data.get('email')))
+    
+    
+    def create_organization(self, data):
+        params_org = {
+            'title': data.get('title'),
+            'name': data.get('name'),
+            'extras': [{'key': 'url', 
+                        'value': data.get('url')},
+                       {'key': 'last_sync', 
+                        'value': NOW_STR()},
+                       {'key': 'last_sync_hash', 
+                        'value': generate_hash(json.dumps(data))},
+                       {'key': 'last_sync_dcat_url', 
+                        'value': data.get('dcat_url')}],
+        }
+        
+        try:
+            org = self.ckan.action.organization_create(**params_org)
+        except ckanapi.ValidationError as e:
+            self.log.error(str(e))
+            return None
+        
+        org_created = True
+        
+        self.log.info('Organization "{0}" created'.format(data.get('name')))
+            
+        # Create/update harvest source
+        try:
+            source = self.ckan.action.harvest_source_show(id=org['name'])
+            self.log.info('Harvest Source "{0}" already exists, perform update...' \
+                     .format(data.get('title')))
+            
+            # Update harvest source url
+            harvest_source_params = {'id': data.get('name'),
+                                     'owner_org': org['id'],
+                                     'url': data.get('dcat_url')}
+            
+            self.ckan.action.harvest_source_patch(**harvest_source_params)
+            self.log.info('Successfully updated harvest source: {0}' \
+                          .format(data.get('name')))
+            
+        except ckanapi.NotFound:
+            params_source = {
+                'title': org['title'],
+                'name': org['name'],
+                'url': data.get('dcat_url'),
+                'owner_org': org['id'],
+                'frequency': 'WEEKLY',
+                'source_type': 'dcat_rdf',
+            }
+            
+            source = self.ckan.action.harvest_source_create(**params_source)
+            source_created = True
+            
+            self.log.info('Created harvest source "{0}"'.format(data['title']))
+    
+            # Create a new harvest job
+            params = {
+                'source_id': source['id'],
+            }
+            source = self.ckan.action.harvest_job_create(**params)
+            self.log.info('Harvest job "{0}" created'.format(data['title']))
+    
+        self._process_users(org, data)
 
     def update_organization(self, data):
         new_hash = generate_hash(json.dumps(data))
         params = {'id': data.get('name'),
-                  'extras': [{'key': 'last_sync', 'value': NOW_STR()},
+                  'extras': [{'key': 'last_sync', 
+                              'value': NOW_STR()},
                              {'key': 'last_sync_hash', 
-                              'value': new_hash}],
-                  
+                              'value': new_hash},
+                             {'key': 'last_sync_dcat_url', 
+                              'value': data.get('dcat_url')}],
         }
+        
         org = self.ckan.action.organization_show(id=data.get('name'),
                                                  include_extras=True, 
                                                  all_fields=True)
@@ -221,7 +252,9 @@ class OppnaDataOrgSync(object):
                     
                     params.update({'name': data.get('name'),
                                    'title': data.get('title')})
-                    params['extras'].append({'key': 'url', 'value': data.get('url')})
+                    
+                    params['extras'].append({'key': 'url', 
+                                             'value': data.get('url')})
                     
                     # Update harvest source url
                     harvest_source_params = {'id': data.get('name'),
@@ -234,17 +267,38 @@ class OppnaDataOrgSync(object):
                     self.log.info('No change in organization: {0}...skip update!' \
                                   .format(data.get('title')))
                     
+        self._process_users(org, data)
         self.ckan.action.organization_patch(**params)
     
     def delete_organization(self, data, soft_delete=False):
-        # TODO: Remove all datasets and harvest sources?
+        
         if soft_delete:
             self.ckan.action.organization_delete(id=data.get('name'))
+            
         else:
+            dcat_url = None
+            for e in data.get('extras'):
+                if e.get('key') != 'last_sync_dcat_url':
+                    continue
+                
+                dcat_url = e.get('value')
+                
+            dcat_url = dcat_url if dcat_url is not None \
+                                    else '{0}/datasets/dcat'.format(data.get('url'))
+                                    
+            harvest_source = self.ckan.action.harvest_source_show(url=dcat_url)
+            
+            # Clear source (remove all datasets)
+            self.ckan.action.harvest_source_clear(id=harvest_source.get('id'))
+            
+            # Delete source
+            self.ckan.action.harvest_source_delete(id=harvest_source.get('id'))
+
+            # Purge organization
             self.ckan.action.organization_purge(id=data.get('name'))
             
     def sync(self):
-        r = requests.get(self.json_url)
+        r = self.get(self.json_url)
         
         if r is None or r.status_code != 200:
             self.log.error('Unable to fetch organization url! Code:{}'.format(r.status_code))
@@ -259,7 +313,7 @@ class OppnaDataOrgSync(object):
             
         self.log.debug('Successfully loaded {} organizations...starting synchronization.' \
                  .format(len(data)))
-        
+
         create, update, delete = [], [], []
         for i, _ in enumerate(data):
             valid, org_dict = self._validate_org(_)
@@ -268,7 +322,7 @@ class OppnaDataOrgSync(object):
                 self.log.warning('Organization: {} is not valid! Skipping...'.format(_))
                 continue
             
-            # Check if org exists
+            # Check if organization exists
             try:
                 org = self.ckan.action.organization_show(id=org_dict['name'])
                 self.log.debug('Organization "{0}" already exists, perform update action...' \
@@ -283,10 +337,10 @@ class OppnaDataOrgSync(object):
                 
                 create.append(org_dict)
                 
-        # Create orgs
+        # Create organizations
         map(lambda org: self.create_organization(org), create)
         
-        # Update orgs
+        # Update organizations
         map(lambda org: self.update_organization(org), update)
         
         # Delete all organizations that are not found in the source json
@@ -300,17 +354,16 @@ class OppnaDataOrgSync(object):
                 if e.get('key') != 'last_sync':
                     continue
                 
+                # last_sync date smaller than current date
+                # which means this org wasn't found in the
+                # last sync operation so it should be removed
                 last_sync = parse_datetime(e.get('value'))
                 if last_sync.date() < NOW().date():
                     delete.append(org)
                     break
-                
+        
         map(lambda org: self.delete_organization(org), delete)
         
         self.log.debug('Create:{0} | Update:{1} | Delete:{2}' \
                        .format(len(create), len(update), len(delete)))
 
-            
-        # TODO: Log statistics
-            
-        # TODO: Rebuild search index

@@ -88,9 +88,11 @@ class SwedenDCATRDFHarvester(p.SingletonPlugin):
     # IConfigurer
     def update_config(self, config):
         p.toolkit.add_template_directory(config, 'templates')
+        p.toolkit.add_resource('fanstatic', 'dcat')
 
     # ITemplateHelpers
     def get_helpers(self):
         return {
             'json_loads': template_helpers.json_loads,
+            'localized_value': template_helpers.get_localized_value
         }

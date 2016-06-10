@@ -262,6 +262,8 @@ class OppnaDataOrgSync(object):
                                              'url': data.get('dcat_url')}
                     
                     self.ckan.action.harvest_source_patch(**harvest_source_params)
+                    self.log.info('Successfully updated harvest source: {0}' \
+                                  .format(data.get('name')))
                     
                 else:
                     self.log.info('No change in organization: {0}...skip update!' \
@@ -286,13 +288,19 @@ class OppnaDataOrgSync(object):
             dcat_url = dcat_url if dcat_url is not None \
                                     else '{0}/datasets/dcat'.format(data.get('url'))
                                     
-            harvest_source = self.ckan.action.harvest_source_show(url=dcat_url)
+            try:
+                harvest_source = self.ckan.action.harvest_source_show(url=dcat_url)
+            except ckanapi.NotFound:
+                
+                self.log.info('Harvest source:{0} not found, skipping removal...' \
+                              .format(data.get('url')))
             
-            # Clear source (remove all datasets)
-            self.ckan.action.harvest_source_clear(id=harvest_source.get('id'))
-            
-            # Delete source
-            self.ckan.action.harvest_source_delete(id=harvest_source.get('id'))
+            else:
+                # Clear source (remove all datasets)
+                self.ckan.action.harvest_source_clear(id=harvest_source.get('id'))
+                
+                # Delete source
+                self.ckan.action.harvest_source_delete(id=harvest_source.get('id'))
 
             # Purge organization
             self.ckan.action.organization_purge(id=data.get('name'))

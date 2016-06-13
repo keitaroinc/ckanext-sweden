@@ -18,14 +18,14 @@ def get_localized_value(string, locale='en'):
         translations = json.load(f)
         
         if string.startswith('[') and string.endswith(']'):
-            return '[{}]'.format(','.join(translations.get(v, v).get(locale, v) \
+            return '{}'.format(','.join(translations.get(v, v).get(locale, v) \
                                            for v in eval(string)))
         
         _ = translations.get(string, None)
         if _ is None:
             return string
         
-        return _.get(locale)
+        return _.get(locale, string)
     
     
     

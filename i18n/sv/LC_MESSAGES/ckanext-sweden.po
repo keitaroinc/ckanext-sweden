@@ -39,8 +39,8 @@ msgid "Organization not found"
 msgstr "Hittar inte organisationen"
 
 #: ckanext/sweden/plugin.py:78
-msgid "Eurovoc Categories"
-msgstr "Eurovoc-kategorier"
+msgid "Categories"
+msgstr "Kategorier"
 
 #: ckanext/sweden/plugin.py:186
 msgid "There already is an organization with this URL: {0}"
@@ -239,23 +239,23 @@ msgstr "Endast de 20 vanligaste felen visas"
 #: ckanext/sweden/dcat/templates/source/job/read.html:45
 #: ckanext/sweden/dcat/templates/source/job/read.html:63
 #: ckanext/sweden/dcat/templates/source/job/read.html:116
-msgid "Job Errors"
-msgstr "Jobbfel"
+msgid "Job Issues"
+msgstr "Job Problem"
 
 #: ckanext/sweden/dcat/templates/source/job/read.html:49
 #: ckanext/sweden/dcat/templates/source/job/read.html:135
-msgid "Document Errors"
-msgstr "Dokumentfel"
+msgid "Document Issues"
+msgstr "Dokument Problem"
 
 #. this is a column in the Resource Errors table
 #: ckanext/sweden/dcat/templates/source/job/read.html:60
 #: ckanext/sweden/dcat/templates/source/job/read.html:113
-msgid "Error Report"
-msgstr "Felrapport"
+msgid "Validation Report"
+msgstr "Validering rapport"
 
 #: ckanext/sweden/dcat/templates/source/job/read.html:82
-msgid "Resource Errors"
-msgstr "Resursfel"
+msgid "Resource Issues"
+msgstr "Resursfrågor"
 
 #. this is a column in the Resource Errors table
 #: ckanext/sweden/dcat/templates/source/job/read.html:88
@@ -393,3 +393,7 @@ msgstr "Senaste tweets"
 #: ckanext/sweden/theme/templates/home/snippets/tweets.html:5
 msgid "Loading recent tweets"
 msgstr "Laddar senaste tweets"
+
+#: ckanext/sweden/templates/source/job/list.html:44
+msgid "issues"
+msgstr "problem"

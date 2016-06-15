@@ -34,19 +34,19 @@
   {% if c.job.status == 'Finished' %}
 
     {% if c.job.object_error_summary|length == 0 and c.job.gather_error_summary|length == 0 %}
-      <h2>{{ _('Error Summary') }}</h2>
+      <h2>{{ _('Summary') }}</h2>
       <p class="empty">{{ _('No errors for this job') }}</p>
     {% else %}
       <h2>
-        {{ _('Error Summary') }}
+        {{ _('Summary') }}
         <small>{{ _('Only the 20 most frequent errors are shown') }}</small>
       </h2>
       {% if c.job.gather_error_summary|length > 0 %}
-        <h3>{{ _('Job Errors') }}</h3>
+        <h3>{{ _('Job Issues') }}</h3>
         {% snippet 'snippets/job_error_summary.html', summary=c.job.gather_error_summary %}
       {% endif %}
       {% if c.job.object_error_summary|length > 0 %}
-        <h3>{{ _('Document Errors') }}</h3>
+        <h3>{{ _('Document Issues') }}</h3>
         {% snippet 'snippets/job_error_summary.html', summary=c.job.object_error_summary %}
       {% endif %}
     {% endif %}
@@ -57,10 +57,10 @@
     {# we only want the validation report for the sweden dcat harvester types #}
 
       <h2>
-        {{ _('Error Report') }}
+        {{ _('Validation Report') }}
       </h2>
       {% if c.job_report.gather_errors|length > 0 %}
-        <h3>{{ _('Job Errors') }}</h3>
+        <h3>{{ _('Summary') }}</h3>
         <table class="table table-bordered table-hover harvest-error-list">
           <tbody>
             {% for error  in c.job_report.gather_errors %}
@@ -79,7 +79,7 @@
       {% endif %}
 
       {% if c.job_report.gather_errors|length > 0 %}
-        <h3>{{ _('Resource Errors') }}</h3>
+        <h3>{{ _('Resource Issues') }}</h3>
         <table class="table table-bordered table-hover harvest-error-list">
           <tbody>
             <tr>
@@ -110,10 +110,10 @@
     {% else %}
     {# otherwise keep the standard harvest reporting #}
       <h2>
-        {{ _('Error Report') }}
+        {{ _('Validation Report') }}
       </h2>
       {% if c.job_report.gather_errors|length > 0 %}
-        <h3>{{ _('Job Errors') }}</h3>
+        <h3>{{ _('Job Issues') }}</h3>
         <table class="table table-bordered table-hover harvest-error-list">
           <tbody>
             {% for error  in c.job_report.gather_errors %}

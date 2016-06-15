@@ -75,7 +75,7 @@ class SwedenPlugin(plugins.SingletonPlugin, DefaultOrganizationForm):
 
         new_position = 1  # new zero indexed position
         eurovoc_facet = {'eurovoc_category_label':
-                         plugins.toolkit._('Eurovoc Categories')}
+                         plugins.toolkit._('Categories')}
 
         if 'eurovoc_category_label' in facets_dict:
             del facets_dict['eurovoc_category_label']

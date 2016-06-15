@@ -39,7 +39,7 @@ msgid "Organization not found"
 msgstr "Hittar inte organisationen"
 
 #: ckanext/sweden/plugin.py:78
-msgid "Eurovoc Categories"
+msgid "Categories"
 msgstr "Kategorier"
 
 #: ckanext/sweden/plugin.py:186

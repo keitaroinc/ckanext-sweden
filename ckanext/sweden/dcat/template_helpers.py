@@ -6,8 +6,8 @@ def json_loads(string):
         return json.loads(string)
     except ValueError:
         return None
-
-
+    
+    
 def get_localized_value(string, locale='en'):
     path = os.path.join(os.path.dirname(__file__),
                                        'translations',
@@ -18,14 +18,21 @@ def get_localized_value(string, locale='en'):
         translations = json.load(f)
         
         if string.startswith('[') and string.endswith(']'):
-            return '{}'.format(','.join(translations.get(v, v).get(locale, v) \
-                                           for v in eval(string)))
+            text = ''
+            
+            for v in eval(string):
+                str = translations.get(v, v).get(locale, v)
+                
+                if isinstance(str, unicode):
+                    text += str.encode('utf-8')
+                else:
+                    text += str
+                    
+            return text.decode('utf-8')
         
-        _ = translations.get(string, None)
-        if _ is None:
+        text = translations.get(string, None)
+        
+        if text is None:
             return string
         
-        return _.get(locale, string)
-    
-    
-    
+        return text.get(locale, string)

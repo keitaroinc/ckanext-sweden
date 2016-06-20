@@ -42,7 +42,7 @@ class SwedenPlugin(plugins.SingletonPlugin, DefaultOrganizationForm):
     def after_show(self, context, pkg_dict):
         '''
         Take the URI value for `theme` populated by dcat, transform it into a
-        Eurovoc category label, and use it as the value for eurovoc category.
+        ap11theme category label, and use it as the value for ap11theme category.
         '''
         theme_dict = next((i for i in pkg_dict.get('extras', [])
                            if i['key'] == 'theme'), {})
@@ -52,7 +52,7 @@ class SwedenPlugin(plugins.SingletonPlugin, DefaultOrganizationForm):
                 theme_list = json.loads(theme)
             except ValueError:
                 theme_list = [theme]
-            pkg_dict['eurovoc_category'] = theme_list[0]
+            pkg_dict['ap11theme_category'] = theme_list[0]
         return pkg_dict
 
     # IFacets
@@ -71,20 +71,20 @@ class SwedenPlugin(plugins.SingletonPlugin, DefaultOrganizationForm):
         return facets_dict
 
     def _update_facets(self, facets_dict):
-        '''Add `eurovoc_category_label` and change its position.'''
+        '''Add `ap11theme_category_label` and change its position.'''
 
         new_position = 1  # new zero indexed position
-        eurovoc_facet = {'eurovoc_category_label':
+        ap11theme_facet = {'ap11theme_category_label':
                          plugins.toolkit._('Categories')}
 
-        if 'eurovoc_category_label' in facets_dict:
-            del facets_dict['eurovoc_category_label']
+        if 'ap11theme_category_label' in facets_dict:
+            del facets_dict['ap11theme_category_label']
 
         old_facets = facets_dict.copy()
         facets_dict.clear()
         for i, facet in enumerate(old_facets):
             if i == new_position:
-                facets_dict.update(eurovoc_facet)
+                facets_dict.update(ap11theme_facet)
             facets_dict.update({facet: old_facets[facet]})
 
         return facets_dict

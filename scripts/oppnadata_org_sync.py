@@ -74,7 +74,7 @@ class OppnaDataOrgSync(object):
         self.ckan = ckanapi.RemoteCKAN(site, apikey=api_key)
         
         self.json_url = os.environ.get(ORGS_URL_ENV_VAR_NAME, 
-                                       'https://sandbox.entryscape.com/sources.json')
+                                       'https://sandbox.oppnadata.se/sources.json')
         
         self.default_email = os.environ.get(DEFAULT_EMAIL_ENV_VAR_NAME,
                                             'admin@email.com')

@@ -108,6 +108,13 @@ class OppnaDataOrgSync(object):
         if title is None or url is None:
             return False, None
         
+        if ' ' in url:
+            url = url.replace(' ', '')
+        
+        if dct_url is not None:
+            if ' ' in dct_url:
+                dct_url = dct_url.replace(' ', '')
+        
         dct_url = dct_url if dct_url is not None \
                             else '{0}/datasets/dcat'.format(url)
                             
@@ -192,7 +199,8 @@ class OppnaDataOrgSync(object):
             
         # Create/update harvest source
         try:
-            source = self.ckan.action.harvest_source_show(id=org['name'])
+            source = self.ckan.action.harvest_source_show(id=org['name'],
+                                                          url=data.get('dcat_url'))
             self.log.info('Harvest Source "{0}" already exists, perform update...' \
                      .format(data.get('title')))
             
@@ -244,31 +252,32 @@ class OppnaDataOrgSync(object):
                                                  include_extras=True, 
                                                  all_fields=True)
         
-        for e in org['extras']:
-            if e.get('key') == 'last_sync_hash':
-                if e.get('value') != new_hash:
-                    self.log.info('Detected change in organization: {0}, perform update action' \
-                                  .format(data.get('title')))
-                    
-                    params.update({'name': data.get('name'),
-                                   'title': data.get('title')})
-                    
-                    params['extras'].append({'key': 'url', 
-                                             'value': data.get('url')})
-                    
-                    # Update harvest source url
-                    harvest_source_params = {'id': data.get('name'),
-                                             'owner_org': org['id'],
-                                             'url': data.get('dcat_url')}
-                    
-                    self.ckan.action.harvest_source_patch(**harvest_source_params)
-                    self.log.info('Successfully updated harvest source: {0}' \
-                                  .format(data.get('name')))
-                    
-                else:
-                    self.log.info('No change in organization: {0}...skip update!' \
-                                  .format(data.get('title')))
-                    
+        if 'extras' in org:
+            for e in org['extras']:
+                if e.get('key') == 'last_sync_hash':
+                    if e.get('value') != new_hash:
+                        self.log.info('Detected change in organization: {0}, perform update action' \
+                                      .format(data.get('title')))
+                        
+                        params.update({'name': data.get('name'),
+                                       'title': data.get('title')})
+                        
+                        params['extras'].append({'key': 'url', 
+                                                 'value': data.get('url')})
+                        
+                        # Update harvest source url
+                        harvest_source_params = {'id': data.get('name'),
+                                                 'owner_org': org['id'],
+                                                 'url': data.get('dcat_url')}
+                        
+                        self.ckan.action.harvest_source_patch(**harvest_source_params)
+                        self.log.info('Successfully updated harvest source: {0}' \
+                                      .format(data.get('name')))
+                        
+                    else:
+                        self.log.info('No change in organization: {0}...skip update!' \
+                                      .format(data.get('title')))
+                        
         self._process_users(org, data)
         self.ckan.action.organization_patch(**params)
     

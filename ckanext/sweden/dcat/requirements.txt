@@ -3,3 +3,7 @@ urllib3
 pyopenssl
 ndg-httpsclient
 pyasn1
+ckanapi
+slugify
+chardet
+requests

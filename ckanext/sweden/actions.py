@@ -5,7 +5,43 @@ from pylons import config
 import ckan.logic.converters as converters
 import ckan.plugins.toolkit as toolkit
 
+@toolkit.side_effect_free
+def dcat_organization_job_list(context, data_dict):
+    '''Returns a list of jobs for a given organization.
 
+    :param status: filter by: "New", "Running", "Finished" jobs
+    :param id: Organization name or id
+    '''
+    
+    org_id = data_dict.get('id')
+    job_status = data_dict.get('status', None)
+    
+    org_params = {'id': org_id}
+    org = toolkit.get_action('organization_show')(context, org_params)
+    
+    pkg_params = {'id': org['name']}
+    pkg = toolkit.get_action('package_show')(context, pkg_params)
+    
+    job_params = {'source_id': pkg['id']}
+    if job_status is not None:
+        job_params.update({'status': job_status})
+    
+    jobs = toolkit.get_action('harvest_job_list')(context, job_params)
+    
+    return jobs
+
+@toolkit.side_effect_free
+def dcat_job_details(context, data_dict):
+    '''Returns a report for the given job
+    :param id: Job id
+    '''
+    job_id = data_dict.pop('id')
+    
+    params = {'id': job_id}
+    details = toolkit.get_action('harvest_job_report')(context, params)
+    
+    return details
+    
 @toolkit.side_effect_free
 def dcat_organization_list(context, data_dict):
     '''Return dcat details for organizations in the site.

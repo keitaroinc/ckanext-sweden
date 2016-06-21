@@ -133,7 +133,70 @@ The `sweden` plugin adds the following API endpoints:
      the organization harvest source. Requires an `id` parameter with the
      organization name or id.
 
+* `dcat_organization_job_list`: Returns a list of harvest jobs for the given organization.
 
+      - `id`: CKAN organization id or name
+      - `status`: Filter jobs by status(New, Running, Finished)
+
+    Usage:
+
+      GET http://127.0.0.1:5000/api/3/action/dcat_organization_job_list?id=haninge-kommun&status=Finished
+
+      Result:
+
+            {
+              "help": "http://127.0.0.1:5000/api/3/action/help_show?name=dcat_organization_job_list",
+              "success": true,
+              "result": [{
+                "id": "c7f45a5e-459d-4226-bdbf-89cf40a8896f",
+                "created": "2016-06-14 12:48:26.946219",
+                "gather_started": "2016-06-14 12:48:28.408297",
+                "gather_finished": "2016-06-14 12:48:30.709579",
+                "finished": "2016-06-14 12:48:34.248561",
+                "source_id": "8c8eeed3-1bcd-4975-856c-a285004a0072",
+                "status": "Finished",
+                "stats": {
+                  "deleted": 0,
+                  "updated": 3,
+                  "added": 0,
+                  "not modified": 0,
+                  "errored": 13
+                }
+              },...]
+            }
+
+
+
+* `dcat_job_details`: Returns a list of HarvestGatherError objects and HarvestObjectError objects for a given job.
+
+      - `id`: Job id
+
+    Usage:
+
+      GET http://127.0.0.1:5000/api/3/action/dcat_job_details?id=90971e97-1f46-433b-bc43-5b2d0839e23c
+
+      Result:
+
+              {
+                "help": "http://127.0.0.1:5000/api/3/action/help_show?name=dcat_job_details",
+                "success": true,
+                "result": {
+                  "gather_errors": [{
+                    "message": "{\"errors\": [], \"type\": \"http://www.w3.org/ns/dcat#Distribution\", \"uri\": \"https://haninge.entryscape.net/store/7/resource/33\", \"template\": \"dcat:Distribution\", \"warnings\": [{\"path\": \"dcterms:format\", \"code\": \"few\"}, {\"path\": \"dcterms:license\", \"code\": \"few\"}, {\"path\": \"dcterms:license\", \"code\": \"few\"}]}"
+                  },...]
+
+                  "object_errors": {
+                    "9a9bf7de-5d4e-4566-b976-f61a96df8461": {
+                      "guid": "https://haninge.entryscape.net/store/7/resource/2",
+                      "errors": [{
+                        "message": "Create validation Error: {'Owner org': 'A organization must be supplied', 'Id': 'Missing value', 'Name': 'Missing value'}",
+                        "type": "Import",
+                        "line": null
+                      }],
+                      "original_url": "https://haninge.entryscape.net/store/7/metadata/dcat?recursive=dcat"
+                    },...
+                  }
+              }
 
 
 ### Dataset Stats API Endpoints

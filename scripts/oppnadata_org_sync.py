@@ -288,7 +288,7 @@ class OppnaDataOrgSync(object):
             
         else:
             dcat_url = None
-            for e in data.get('extras'):
+            for e in data.get('extras', []):
                 if e.get('key') != 'last_sync_dcat_url':
                     continue
                 
@@ -367,17 +367,26 @@ class OppnaDataOrgSync(object):
         organization_list = self.ckan.action.organization_list(**params)
         for org in organization_list:
             
-            for e in org['extras']:
-                if e.get('key') != 'last_sync':
-                    continue
-                
-                # last_sync date smaller than current date
-                # which means this org wasn't found in the
-                # last sync operation so it should be removed
-                last_sync = parse_datetime(e.get('value'))
-                if last_sync.date() < NOW().date():
+            if 'extras' in org:
+                found = False
+                for e in org['extras']:
+                    if e.get('key') != 'last_sync':
+                        continue
+                    
+                    # last_sync date smaller than current date
+                    # which means this org wasn't found in the
+                    # last sync operation so it should be removed
+                    found = True
+                    last_sync = parse_datetime(e.get('value'))
+                    if last_sync.date() < NOW().date():
+                        delete.append(org)
+                        break
+                    
+                if not found:
                     delete.append(org)
-                    break
+                    
+            else:
+                delete.append(org)
         
         map(lambda org: self.delete_organization(org), delete)
         

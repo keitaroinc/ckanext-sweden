@@ -287,6 +287,8 @@ class OppnaDataOrgSync(object):
             self.ckan.action.organization_delete(id=data.get('name'))
             
         else:
+            # Unable to purge because fk constraints
+            # use delete instead
             dcat_url = None
             for e in data.get('extras', []):
                 if e.get('key') != 'last_sync_dcat_url':
@@ -310,9 +312,20 @@ class OppnaDataOrgSync(object):
                 
                 # Delete source
                 self.ckan.action.harvest_source_delete(id=harvest_source.get('id'))
+                
+                self.ckan.action.package_delete(id=data.get('name'))
 
-            # Purge organization
-            self.ckan.action.organization_purge(id=data.get('name'))
+            # Check for existing packages
+            # and remove them if found
+            if data.get('package_count', 0) > 0:
+                org = self.ckan.action.organization_show(id=data.get('name'),
+                                                         include_datasets=True, 
+                                                         all_fields=True)
+                for p in org['packages']:
+                    self.ckan.action.package_delete(id=p['name'])
+                    
+            # Delete organization
+            self.ckan.action.organization_delete(id=data.get('name'))
             
     def sync(self):
         r = self.get(self.json_url)
@@ -392,4 +405,3 @@ class OppnaDataOrgSync(object):
         
         self.log.debug('Create:{0} | Update:{1} | Delete:{2}' \
                        .format(len(create), len(update), len(delete)))
-

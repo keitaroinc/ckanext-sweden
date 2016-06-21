@@ -137,6 +137,10 @@ class SwedenPlugin(plugins.SingletonPlugin, DefaultOrganizationForm):
         action_functions = {
             'dcat_organization_list':
                 ckanext.sweden.actions.dcat_organization_list,
+            'dcat_organization_job_list':
+                ckanext.sweden.actions.dcat_organization_job_list,
+            'dcat_job_details':
+                ckanext.sweden.actions.dcat_job_details,
             'dcat_validation':
                 ckanext.sweden.actions.dcat_validation,
             'user_invite':

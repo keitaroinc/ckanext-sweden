@@ -97,16 +97,16 @@ To modify the theme of the ckanext-sweden theme you'll need to:
    `./ckanext/theme/resources`
 
 
-Sweden Plugin and Eurovoc categories
+Sweden Plugin and DCAT AP 1.1 theme categories
 ------------------------------------
 
-To enable Eurovoc categories:
+To enable DCAT AP 1.1 theme categories:
 
-1. Install [ckanext-eurovoc](https://github.com/ckan/ckanext-eurovoc)::
+1. Install [ckanext-ap11theme](https://github.com/keitaroinc/ckanext-ap11theme)::
 
-    pip install ckanext-eurovoc
+    pip install ckanext-ap11theme
 
-2. Enable the Eurovoc and Sweden plugins by adding `eurovoc` and `sweden` to
+2. Enable the DCAT AP 1.1 theme and Sweden plugins by adding `ap11theme` and `sweden` to
    `ckan.plugins`.
 
 

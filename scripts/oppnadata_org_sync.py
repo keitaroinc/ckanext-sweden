@@ -307,13 +307,27 @@ class OppnaDataOrgSync(object):
                               .format(data.get('url')))
             
             else:
-                # Clear source (remove all datasets)
-                self.ckan.action.harvest_source_clear(id=harvest_source.get('id'))
+                self.log.info('Deleting organization {}...'.format(data.get('name')))
+                try:
+                    # Clear source (remove all datasets)
+                    self.ckan.action.harvest_source_clear(id=harvest_source.get('id'))
+                except ckanapi.NotFound:
+                    self.log.info('Unable to clear harvest source: {}'\
+                                  .format(harvest_source.get('id')))
+                    
+                try:
+                    # Delete source
+                    self.ckan.action.harvest_source_delete(id=harvest_source.get('id'))
+                    
+                except ckanapi.NotFound:
+                    self.log.info('Unable to delete harvest source: {}'\
+                                  .format(harvest_source.get('id')))
                 
-                # Delete source
-                self.ckan.action.harvest_source_delete(id=harvest_source.get('id'))
-                
-                self.ckan.action.package_delete(id=data.get('name'))
+                try:
+                    self.ckan.action.package_delete(id=data.get('name'))
+                    
+                except ckanapi.NotFound:
+                    self.log.info('Unable to delete package: {}'.format(data.get('name')))
 
             # Check for existing packages
             # and remove them if found
@@ -322,10 +336,16 @@ class OppnaDataOrgSync(object):
                                                          include_datasets=True, 
                                                          all_fields=True)
                 for p in org['packages']:
-                    self.ckan.action.package_delete(id=p['name'])
+                    try:
+                        self.ckan.action.package_delete(id=p['name'])
+                    except ckanapi.NotFound:
+                        self.log.info('Unable to delete package: {}'.format(p['name']))
                     
             # Delete organization
-            self.ckan.action.organization_delete(id=data.get('name'))
+            try:
+                self.ckan.action.organization_delete(id=data.get('name'))
+            except ckanapi.NotFound:
+                self.log.info('Unable to delete organization: {}'.format(data.get('name')))
             
     def sync(self):
         r = self.get(self.json_url)

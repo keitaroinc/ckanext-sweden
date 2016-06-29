@@ -21,7 +21,10 @@ def get_localized_value(string, locale='en'):
             text = ''
             
             for v in eval(string):
-                str = translations.get(v, v).get(locale, v)
+                str = translations.get(v, v)
+                
+                if isinstance(str, dict):
+                    str = str.get(locale, v)
                 
                 if isinstance(str, unicode):
                     text += str.encode('utf-8')

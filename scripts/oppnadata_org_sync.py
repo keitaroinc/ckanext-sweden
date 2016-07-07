@@ -105,19 +105,20 @@ class OppnaDataOrgSync(object):
         dct_url = self._check_unicode(org.get('dct_url', None))
         email = self._check_unicode(org.get('email', None))
         
-        if title is None or url is None:
+        if title is None or dct_url is None:
             return False, None
-        
-        if ' ' in url:
-            url = url.replace(' ', '')
         
         if dct_url is not None:
             if ' ' in dct_url:
                 dct_url = dct_url.replace(' ', '')
         
-        dct_url = dct_url if dct_url is not None \
-                            else '{0}/datasets/dcat'.format(url)
-                            
+        if url is None:
+            from urlparse import urlparse
+            url = '{uri.scheme}://{uri.netloc}'.format(uri=urlparse(dct_url))
+            
+        if ' ' in url:
+            url = url.replace(' ', '')
+        
         email = email if email is not None \
                         else self.default_email
                         
@@ -240,6 +241,7 @@ class OppnaDataOrgSync(object):
     def update_organization(self, data):
         new_hash = generate_hash(json.dumps(data))
         params = {'id': data.get('name'),
+                  'state': 'active',
                   'extras': [{'key': 'last_sync', 
                               'value': NOW_STR()},
                              {'key': 'last_sync_hash', 
@@ -265,18 +267,18 @@ class OppnaDataOrgSync(object):
                         params['extras'].append({'key': 'url', 
                                                  'value': data.get('url')})
                         
-                        # Update harvest source url
-                        harvest_source_params = {'id': data.get('name'),
-                                                 'owner_org': org['id'],
-                                                 'url': data.get('dcat_url')}
-                        
-                        self.ckan.action.harvest_source_patch(**harvest_source_params)
-                        self.log.info('Successfully updated harvest source: {0}' \
-                                      .format(data.get('name')))
-                        
                     else:
                         self.log.info('No change in organization: {0}...skip update!' \
                                       .format(data.get('title')))
+                        
+        # Update harvest source url
+        harvest_source_params = {'id': data.get('name'),
+                                 'owner_org': org['id'],
+                                 'url': data.get('dcat_url')}
+        
+        self.ckan.action.harvest_source_patch(**harvest_source_params)
+        self.log.info('Successfully updated harvest source: {0}' \
+                      .format(data.get('name')))
                         
         self._process_users(org, data)
         self.ckan.action.organization_patch(**params)
@@ -369,7 +371,7 @@ class OppnaDataOrgSync(object):
             valid, org_dict = self._validate_org(_)
             
             if not valid:
-                self.log.warning('Organization: {} is not valid! Skipping...'.format(_))
+                self.log.warning('Organization: {} is not valid, missing name or dct_url!  Skipping...'.format(_))
                 continue
             
             # Check if organization exists

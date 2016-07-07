@@ -274,7 +274,8 @@ class OppnaDataOrgSync(object):
         # Update harvest source url
         harvest_source_params = {'id': data.get('name'),
                                  'owner_org': org['id'],
-                                 'url': data.get('dcat_url')}
+                                 'url': data.get('dcat_url'),
+                                 'state': 'active'}
         
         self.ckan.action.harvest_source_patch(**harvest_source_params)
         self.log.info('Successfully updated harvest source: {0}' \

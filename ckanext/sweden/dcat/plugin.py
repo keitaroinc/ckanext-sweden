@@ -10,7 +10,7 @@ from ckanext.dcat.interfaces import IDCATRDFHarvester
 from ckanext.sweden.dcat import template_helpers
 
 
-VALIDATION_SERVICE = 'https://validator.dcat-editor.com/service'
+VALIDATION_SERVICE = 'https://sandbox.oppnadata.se/validator'
 
 # Assume that remote files with this media types are RDF/XML
 rdflib.plugin.register(

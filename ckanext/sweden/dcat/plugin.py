@@ -19,7 +19,12 @@ rdflib.plugin.register(
 rdflib.plugin.register(
     'application/rss+xml', rdflib.parser.Parser,
     'rdflib.plugins.parsers.rdfxml', 'RDFXMLParser')
-
+rdflib.plugin.register(
+    'text/xml', rdflib.parser.Parser,
+    'rdflib.plugins.parsers.rdfxml', 'RDFXMLParser')
+rdflib.plugin.register(
+    'text/plain', rdflib.parser.Parser,
+    'rdflib.plugins.parsers.rdfxml', 'RDFXMLParser')
 
 class SwedenDCATRDFHarvester(p.SingletonPlugin):
 

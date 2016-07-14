@@ -20,6 +20,9 @@ class SwedishDCATAPProfile(RDFProfile):
         spatial = self._object(dataset_ref, DCT.spatial)
         if spatial:
             spatial_label = self.g.label(spatial)
+            if isinstance(spatial_label, unicode):
+                spatial_label = spatial_label.encode('utf-8')
+                
             if spatial_label:
                 dataset_dict['extras'].append({'key': 'spatial_text',
                                                'value': str(spatial_label)})
